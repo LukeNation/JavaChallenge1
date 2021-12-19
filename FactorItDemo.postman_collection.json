@@ -1,0 +1,202 @@
+{
+	"info": {
+		"_postman_id": "5eba957a-e3ba-49ed-89f1-0bc19835e088",
+		"name": "FactorItDemo Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "getUserShop",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/getShops?userId=14415550&fromDate=20211015",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"getShops"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "14415550"
+						},
+						{
+							"key": "fromDate",
+							"value": "20211015"
+						},
+						{
+							"key": "toDate",
+							"value": "20211016",
+							"disabled": true
+						},
+						{
+							"key": "orderType",
+							"value": "amount",
+							"description": "por defecto el sistema ordena por fecha, en caso de que aqui se ingrese el valor Amount lo ordenara por monto (no case sensitive)",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "createCart",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\":14415550,\r\n    \"isSpecial\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/createCart",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"createCart"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "deleteCart",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/deleteCart?userId=14415550",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"deleteCart"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "14415550"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "addItemToCart",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\":14415550,\r\n    \"_itemId\":2,\r\n    \"quantity\":3,\r\n    \"itemName\":\"Salames\",\r\n    \"priceUnit\":2100.00\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/addToCart",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"addToCart"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getCartStatus",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/getCartStatus?userId=14415550",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"getCartStatus"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "14415550"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "deleteFromCart",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/deleteFromCart?userId=14415550&itemId=2",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"deleteFromCart"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "14415550"
+						},
+						{
+							"key": "itemId",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "doneShop",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/doneShop?userId=14415550",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"doneShop"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "14415550"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
