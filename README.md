@@ -1,7 +1,7 @@
 # JavaChallenge1
 a Java Challenge to a company's technical test
 
-#Notes:
+# Notes:
 
 - no Schema.sql file, the DB is automatically build with the application running, and is deleted when the application stop. 
 - everytime the app start, some data is charged into the base with import.sql file. to have previous information into the DB. 
@@ -15,7 +15,7 @@ a Java Challenge to a company's technical test
 
 
 
-#technologies used in this project:
+# technologies used in this project:
 
 - Java 11
 - Spring boot 2.6.1
