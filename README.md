@@ -17,12 +17,12 @@ a Java Challenge to a company's technical test
 
 #technologies used in this project:
 
--Java 11
--Spring boot 2.6.1
--Spring boot Starter Web
--JPA - Hibernate
--H2 Database
--lombok
--JUnit 4.13.2
--Mockito 1.10.19
--Postman
+- Java 11
+- Spring boot 2.6.1
+- Spring boot Starter Web
+- JPA - Hibernate
+- H2 Database
+- lombok
+- JUnit 4.13.2
+- Mockito 1.10.19
+- Postman
