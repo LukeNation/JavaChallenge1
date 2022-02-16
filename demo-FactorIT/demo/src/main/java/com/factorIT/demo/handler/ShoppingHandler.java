@@ -26,6 +26,18 @@ public class ShoppingHandler {
                                     @RequestParam(required = false) Long fromDate,
                                     @RequestParam(required = false) Long toDate,
                                     @RequestParam(required = false) String orderType){
+
+
+
+
+
+
+
+
+
+
+
+        
         log.info("se listan las compras del usuario {}",userId);
         return ResponseEntity.ok(service.getShopsFromUser(userId,fromDate,toDate,orderType));
     };
