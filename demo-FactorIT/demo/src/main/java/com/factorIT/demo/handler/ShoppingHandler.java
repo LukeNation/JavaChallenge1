@@ -15,7 +15,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-public class ShoppingHandler {
+public class ShoppingHandler implements  ShoppingHandlerInterface{
 
     @Autowired
     UserService service;
@@ -27,28 +27,23 @@ public class ShoppingHandler {
                                     @RequestParam(required = false) Long toDate,
                                     @RequestParam(required = false) String orderType){
 
-
-
-
-
-
-
-
-
-
-
-        
         log.info("se listan las compras del usuario {}",userId);
         return ResponseEntity.ok(service.getShopsFromUser(userId,fromDate,toDate,orderType));
     };
 
     @PostMapping(path = "/createCart")
+    @Override
     public ResponseEntity<String> createCart(@RequestBody CreateCartRequest request){
         service.createCart(request.getUserId(),request.getIsSpecial());
         log.info("se ha solicitado crear un carrito para el usuario: {} de categoria especial: {}",request.getUserId(), request.getIsSpecial());
         return ResponseEntity.ok("se ha creado un carrito para el usuario solicitado");
     }
 
+    /**
+     * aqui se añade la descripcion de lo que hace
+     * @param userId
+     * @return
+     */
     @DeleteMapping(path="/deleteCart")
     public ResponseEntity<String> deleteCart(@RequestParam Long userId){
         service.deleteCart(userId);
