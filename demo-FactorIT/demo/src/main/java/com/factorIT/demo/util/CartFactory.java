@@ -23,7 +23,7 @@ public class CartFactory {
         cart.setDiscount(0.0);
         cart.setTotal(0.0);
         cart.setTotalNoDiscount(0.0);
-        cart.setSpecial(isSpecial);
+        cart.setCartType(0);
         return cart;
     }
 

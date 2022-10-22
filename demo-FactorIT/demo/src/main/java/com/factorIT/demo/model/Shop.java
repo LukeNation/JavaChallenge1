@@ -20,7 +20,7 @@ public class Shop {
     @GeneratedValue
     private Long id;
     private Long dateTime;
-    private Boolean special;
+    private Integer cartType;
     @OneToMany(cascade = CascadeType.ALL)
     private List<Items> itemsList;
     private Double totalNoDiscount;

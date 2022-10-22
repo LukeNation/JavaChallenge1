@@ -6,6 +6,8 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.List;
 
+import static com.factorIT.demo.util.CartFactory.cartFactory;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -29,5 +31,11 @@ public class User {
     @Nullable
     private Shop shoppingCart;
 
+    public Shop getShoppingCart(){
+        if(shoppingCart == null){
+            shoppingCart = cartFactory(vip);
+        }
+        return shoppingCart;
+    }
 
 }

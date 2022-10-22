@@ -2,7 +2,6 @@ package com.factorIT.demo.service;
 
 import com.factorIT.demo.model.Items;
 import com.factorIT.demo.model.Shop;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -16,7 +15,7 @@ public interface UserService {
 
     List<Items> getCartStatus(Long userId);
 
-    void createCart(Long userId, Boolean isSpecial);
+    Shop createCart(Long userId);
 
     void deleteFromCart(Long userId, Long itemId);
 

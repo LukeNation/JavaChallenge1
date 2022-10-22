@@ -5,21 +5,19 @@ import com.factorIT.demo.model.Items;
 import com.factorIT.demo.model.Shop;
 import com.factorIT.demo.model.User;
 import com.factorIT.demo.repository.ItemCatalogRepository;
+import com.factorIT.demo.repository.ShopRepository;
 import com.factorIT.demo.repository.UserRepository;
 import com.factorIT.demo.service.UserService;
 import com.sun.istack.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 
 import static com.factorIT.demo.util.CartFactory.cartFactory;
 
@@ -33,6 +31,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ItemCatalogRepository repositoryCatalog;
 
+    @Autowired
+    ShopRepository repositoryShop;
 
     @Override
     public List<Shop> getShopsFromUser(Long dni, Long filterFrom, Long filterTo, String orderType) {
@@ -117,13 +117,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    public void createCart(Long userId, Boolean isSpecial){
+    public Shop createCart(Long userId){
         User user = repositoryUser.getById(userId);
-        if(user.getShoppingCart() == null) {
-            Shop cart = cartFactory(isSpecial);
-            user.setShoppingCart(cart);
-            repositoryUser.save(user);
-        }
+        Shop cart = user.getShoppingCart();
+        repositoryShop.save(cart);
+        repositoryUser.save(user);
+        return cart;
     }
 
     @Override
@@ -164,10 +163,6 @@ public class UserServiceImpl implements UserService {
         if(cantidadItems > 3){
             log.info("se suma descuento por cantidad de items");
             discountAmount += 100.0;
-            if(cart.getSpecial()){
-                log.info("se suma descuento extra a la cantidad por ser carrito especial");
-                discountAmount +=50.0;
-            }
         }
         if(user.getVip()){
             user.setVip(false);
