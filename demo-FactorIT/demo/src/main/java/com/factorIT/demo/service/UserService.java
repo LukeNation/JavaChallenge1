@@ -7,17 +7,17 @@ import java.util.List;
 
 public interface UserService {
 
-    List<Shop> getShopsFromUser(Long dni, Long filterFrom, Long filterTo,String orderType);
+    List<Items> getShopsFromUser(Long dni);
 
-    void addToCart(Long dni, Long itemId, Integer quantity, String itemName, Double PriceUnit);
+    void addToCart(Long dni, Long itemId, Integer quantity);
 
     void deleteCart(Long userId);
 
-    List<Items> getCartStatus(Long userId);
+    Shop getCartStatus(Long userId);
 
     Shop createCart(Long userId);
 
-    void deleteFromCart(Long userId, Long itemId);
+    Shop deleteFromCart(Long userId, Long itemId);
 
     Double doneShop(Long userId);
 }

@@ -9,8 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.ArrayList;
+
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -21,13 +25,10 @@ public class ShoppingHandler {
 
 
     @GetMapping(path = "/getShops")
-    public ResponseEntity<List<Shop>> getShops (@RequestParam Long userId,
-                                    @RequestParam(required = false) Long fromDate,
-                                    @RequestParam(required = false) Long toDate,
-                                    @RequestParam(required = false) String orderType){
+    public ResponseEntity<List<Items>> getShops (@RequestParam Long userId){
 
         log.info("se listan las compras del usuario {}",userId);
-        return ResponseEntity.ok(service.getShopsFromUser(userId,fromDate,toDate,orderType));
+        return ResponseEntity.ok(service.getShopsFromUser(userId).subList(0,4));
     };
 
     @PostMapping(path = "/createCart")
@@ -50,25 +51,23 @@ public class ShoppingHandler {
             return ResponseEntity.badRequest().body("error, debe ingresar el id de un item valido o su nombre y precio correspondientes");
         }
 
-        service.addToCart(request.getUserId(), request.getItemId(), request.getQuantity(),request.getItemName(),request.getPriceUnit());
+        service.addToCart(request.getUserId(), request.getItemId(), request.getQuantity());
         log.info("el item {} se ha agregado al carrito del usuario {}", request.getItemName(),request.getUserId());
-        return ResponseEntity.ok("El item ha sido añadido correctamente al carrito del usuario");
+        //Shop cart = service.getCartStatus(request.getUserId());
+        return ResponseEntity.ok("se añadio el item al carrito");
     }
 
     @DeleteMapping(path="/deleteFromCart")
-    public ResponseEntity<String> deleteFromCart(@RequestParam Long userId, @RequestParam Long itemId){
-        service.deleteFromCart(userId,itemId);
+    public ResponseEntity<Shop> deleteFromCart(@RequestParam Long userId, @RequestParam Long itemId){
+        Shop cart = service.deleteFromCart(userId,itemId);
         log.info("se ha eliminado del carrito del usuario {} el item con id {}",userId,itemId);
-        return ResponseEntity.ok("el item se ha eliminado del carrito satisfactoriamente");
+        return ResponseEntity.ok(cart);
     }
 
     @GetMapping(path = "/getCartStatus")
-    public ResponseEntity<List<Items>> getCartStatus(@RequestParam Long userId){
-        List<Items>items =  service.getCartStatus(userId);
+    public ResponseEntity<Shop> getCartStatus(@RequestParam Long userId){
+        Shop items =  service.getCartStatus(userId);
 
-        if(items == null ){
-            items = new ArrayList<>();
-        }
         return ResponseEntity.ok(items);
     }
 

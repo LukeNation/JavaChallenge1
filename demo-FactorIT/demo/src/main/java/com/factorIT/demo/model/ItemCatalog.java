@@ -1,5 +1,6 @@
 package com.factorIT.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.Entity;
@@ -18,6 +19,7 @@ public class ItemCatalog {
 
     @Id
     @GeneratedValue
+    @JsonIgnore
     private Long id;
     private String name;
     private Double priceUnit;

@@ -5,6 +5,7 @@ import com.factorIT.demo.model.Items;
 import com.factorIT.demo.model.Shop;
 import com.factorIT.demo.model.User;
 import com.factorIT.demo.repository.ItemCatalogRepository;
+import com.factorIT.demo.repository.ItemsRepository;
 import com.factorIT.demo.repository.ShopRepository;
 import com.factorIT.demo.repository.UserRepository;
 import com.factorIT.demo.service.UserService;
@@ -13,13 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.List;
+import javax.transaction.Transactional;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.factorIT.demo.util.CartFactory.cartFactory;
 
 @Service
 @Slf4j
@@ -34,66 +31,51 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ShopRepository repositoryShop;
 
+    @Autowired
+    ItemsRepository repositoryItem;
+
     @Override
-    public List<Shop> getShopsFromUser(Long dni, Long filterFrom, Long filterTo, String orderType) {
+    public List<Items> getShopsFromUser(Long dni) {
 
         log.info("el dni traido es {}",dni);
         User user = repositoryUser.getById(dni);
-        List<Shop> shopList = null;
-        if(user != null) {
-            shopList = user.getShoppingList();
-            if(shopList != null) {
-                if (orderType != null && orderType.toLowerCase().equals("amount")) {
-                    shopList = shopList.stream().sorted(Comparator.comparing(Shop::getTotal)).collect(Collectors.toList());
-                }
-                else{
-                    shopList = shopList.stream().sorted(Comparator.comparing(Shop::getDateTime)).collect(Collectors.toList());
-                }
-                if (filterFrom != null) {
-                    shopList = shopList.stream().filter(each -> {
-                        return each.getDateTime() >= filterFrom;
-                    }).collect(Collectors.toList());
-                    log.info("la cantidad de compras a partir de la fecha solicitada es {}", shopList.size());
-                    if (filterTo != null) {
-                        shopList = shopList.stream().filter(each -> {
-                            return each.getDateTime() <= filterTo;
-                        }).collect(Collectors.toList());
-                        log.info("la cantidad de compras entre las fechas solicitadas es {}", shopList.size());
-                    }
-                }
-            }
+        LinkedHashSet<Items> setItems = new LinkedHashSet<>();
+        List<Shop> shopList = user.getShoppingList();
+        List<Items> temporalList = new ArrayList<>();
+        if(shopList != null) {
+            shopList = shopList.stream().sorted(Comparator.comparing(Shop::getTotal)).collect(Collectors.toList());
+            List<List<Items>> shopItemList = shopList.stream().map(Shop::getItemsList).collect(Collectors.toList());
+            shopItemList.forEach(setItems::addAll);
+            setItems = setItems.stream().sorted(Comparator.comparing(Items::getPrivateValue)).collect(Collectors.toCollection(LinkedHashSet::new));
+            temporalList.addAll(setItems);
+            Collections.reverse(temporalList);
         }
-        return shopList;
+        return temporalList;
     }
 
     @Override
-    public void addToCart(Long dni, Long itemId, Integer quantity, String itemName, Double priceUnit) {
+    @Transactional
+    public void addToCart(Long dni, Long itemId, Integer quantity) {
         //log.info("el id es: {} y el usuario es {}",itemId,dni);
         User user = repositoryUser.getById(dni);
-        ItemCatalog itemCatalog;
-        if(itemId != null) {
-             itemCatalog = repositoryCatalog.getById(itemId);
-        }else{
-            itemCatalog = new ItemCatalog();
-            itemCatalog.setName(itemName);
-            itemCatalog.setPriceUnit(priceUnit);
-        }
+        ItemCatalog itemCatalog = repositoryCatalog.getById(itemId);
         log.info("el nombre del usuario es {} y el precio del item es {}",user.getName(),itemCatalog.getPriceUnit());
         Items item = new Items();
         item.setItemCatalog(itemCatalog);
         item.setQuantity(quantity);
         Shop cart = user.getShoppingCart();
-        if(cart == null){
-            cart = cartFactory(false);
+        List<Items> cartItemList = cart.getItemsList();
+        if(cartItemList.contains(item)){
+            item = cartItemList.get(cartItemList.indexOf(item));
+            item.setQuantity(item.getQuantity()+quantity);
+        }else{
+            cart.getItemsList().add(item);
         }
-        cart.getItemsList().add(item);
-        int discountQuantity=0;
-        if(quantity>=4){
-            discountQuantity = quantity/4;
-            log.info("se esta aplicando promocion 4x3 por la cantidad de {} ofertas",discountQuantity);
-        }
-        cart.setTotalNoDiscount(cart.getTotalNoDiscount() +(item.getItemCatalog().getPriceUnit()*(quantity-discountQuantity)));
+        cart.setTotalNoDiscount(cart.getTotalNoDiscount() + (item.getItemCatalog().getPriceUnit() * quantity));
         user.setShoppingCart(cart);
+        repositoryCatalog.save(itemCatalog);
+        repositoryItem.save(item);
+        repositoryShop.save(cart);
         repositoryUser.save(user);
     }
 
@@ -107,14 +89,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Items> getCartStatus(Long userId) {
+    public Shop getCartStatus(Long userId) {
         User user = repositoryUser.getById(userId);
         Shop cart = user.getShoppingCart();
-        if(cart != null){
-            return cart.getItemsList();
-        } else {
-            return null;
-        }
+        repositoryShop.save(cart);
+        return cart;
     }
 
     public Shop createCart(Long userId){
@@ -126,14 +105,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteFromCart(Long userId, Long itemId) {
+    public Shop deleteFromCart(Long userId, Long itemId) {
         User user = repositoryUser.getById(userId);
         Shop cart = user.getShoppingCart();
         if(cart != null ){
-            cart.getItemsList().removeIf(each -> {return each.getItemCatalog().getId().equals(itemId);});
+            List<Items> cartItemList = cart.getItemsList();
+            ItemCatalog itemCatalog = repositoryCatalog.getById(itemId);
+            Items itemBuscado = new Items();
+            itemBuscado.setItemCatalog(itemCatalog);
+            if(cartItemList.contains(itemBuscado)){
+                Items itemEncontrado = cartItemList.get(cartItemList.indexOf(itemBuscado));
+                Double valorADescontar = itemEncontrado.getItemCatalog().getPriceUnit() * itemEncontrado.getQuantity();
+                cartItemList.removeIf(each -> {return each.getItemCatalog().getId().equals(itemId);});
+                cart.setTotalNoDiscount(cart.getTotalNoDiscount()-valorADescontar);
+            }
             user.setShoppingCart(cart);
             repositoryUser.save(user);
         }
+        return cart;
     }
 
     @Override
@@ -177,18 +166,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private void calculateVIP(User user){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMM");
-        LocalDateTime now = LocalDateTime.now();
-        String fechaInicioStr = dtf.format(now)+"01";
-        String fechaFinStr = dtf.format(now)+"31";
-        Long fechaStart = Long.parseLong(fechaInicioStr);
-        Long fechaEnd = Long.parseLong(fechaFinStr);
-        log.info("para calcular el vip se veran entre las fechas {} y {}",fechaStart,fechaEnd);
-        List<Shop> compraDelMes = getShopsFromUser(user.getDni(),fechaStart,fechaEnd,null);
-        Double total = compraDelMes.stream().mapToDouble(Shop::getTotal).sum();
-        log.info("el total a comparar para el VIP es: {}",total);
-        if(total >= 5000){
-            user.setVip(true);
-        }
+
     }
 }
