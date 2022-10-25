@@ -47,6 +47,9 @@ public class Shop {
                 discount += totalNoDiscount*0.1;
             }
             total = totalNoDiscount - discount;
+            if(total < 0 ){
+                total = 0d;
+            }
         }
     }
 }
