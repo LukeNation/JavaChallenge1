@@ -6,6 +6,7 @@ import com.factorIT.demo.model.ItemCatalog;
 import com.factorIT.demo.model.Items;
 import com.factorIT.demo.model.Shop;
 import com.factorIT.demo.service.UserService;
+import com.factorIT.demo.util.CartFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -17,8 +18,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -31,9 +31,20 @@ public class TestShoppingHandler {
     @InjectMocks
     ShoppingHandler controller;
 
-    /*private List<Shop> makeShoppingList(){
-        List<Shop> list = new ArrayList<>();
-        list.add(Shop.builder().dateTime(20211221L).special(true).total(125.00).build());
+    private List<Items> makeShoppingListComplete(){
+        List<Items> list = new ArrayList<>();
+        list.add(Items.builder().itemCatalog(ItemCatalog.builder().id(1L).priceUnit(100.0).name("flores").build()).quantity(1).build());
+        list.add(Items.builder().itemCatalog(ItemCatalog.builder().id(2L).priceUnit(200.0).name("flores").build()).quantity(1).build());
+        list.add(Items.builder().itemCatalog(ItemCatalog.builder().id(3L).priceUnit(300.0).name("flores").build()).quantity(1).build());
+        list.add(Items.builder().itemCatalog(ItemCatalog.builder().id(4L).priceUnit(400.0).name("flores").build()).quantity(1).build());
+        list.add(Items.builder().itemCatalog(ItemCatalog.builder().id(5L).priceUnit(500.0).name("flores").build()).quantity(1).build());
+        return list;
+    }
+
+    private List<Items> makeShoppingListNotFull(){
+        List<Items> list = new ArrayList<>();
+        list.add(Items.builder().itemCatalog(ItemCatalog.builder().id(1L).priceUnit(100.0).name("flores").build()).quantity(1).build());
+        list.add(Items.builder().itemCatalog(ItemCatalog.builder().id(2L).priceUnit(200.0).name("flores").build()).quantity(1).build());
         return list;
     }
 
@@ -47,18 +58,23 @@ public class TestShoppingHandler {
 
     @Test
     public void testGetShopsOk(){
-        when(userService.getShopsFromUser(any())).thenReturn(makeShoppingList());
-        ResponseEntity<List<Shop>> response = controller.getShops(123L);
+        when(userService.getShopsFromUser(any())).thenReturn(makeShoppingListComplete());
+        ResponseEntity<List<Items>> response = controller.getShops(123L);
         assertEquals(HttpStatus.OK,response.getStatusCode());
-        assertEquals(1,response.getBody().size());
-        assertEquals(Long.valueOf(20211221L),response.getBody().get(0).getDateTime());
-        assertEquals(Double.valueOf(125.00),response.getBody().get(0).getTotal());
-        assertTrue(response.getBody().get(0).getSpecial());
+        assertEquals(4,response.getBody().size());
+    }
+
+    @Test
+    public void testGetShopsOKEmpty(){
+        when(userService.getShopsFromUser(any())).thenReturn(makeShoppingListNotFull());
+        ResponseEntity<List<Items>> response = controller.getShops(123L);
+        assertEquals(HttpStatus.OK,response.getStatusCode());
+        assertEquals(2,response.getBody().size());
     }
 
     @Test
     public void testCreateCart(){
-        ResponseEntity<String> response = controller.createCart(CreateCartRequest.builder().userId(14415550L).isSpecial(false).build());
+        ResponseEntity<Shop> response = controller.createCart(CreateCartRequest.builder().userId(14415550L).isSpecial(false).build());
         assertEquals(HttpStatus.OK,response.getStatusCode());
     }
 
@@ -70,13 +86,13 @@ public class TestShoppingHandler {
 
     @Test
     public void testAddToCartOK(){
-        ResponseEntity<Shop> response = controller.addToCart(AddCartRequest.builder().userId(14415550L).quantity(2).build());
+        ResponseEntity<String> response = controller.addToCart(AddCartRequest.builder().userId(14415550L).itemId(101L).quantity(2).build());
         assertEquals(HttpStatus.OK,response.getStatusCode());
     }
 
     @Test
     public void testAddToCartBadRequest(){
-        ResponseEntity<Shop> response = controller.addToCart(AddCartRequest.builder().userId(14415550L).build());
+        ResponseEntity<String> response = controller.addToCart(AddCartRequest.builder().userId(14415550L).build());
         assertEquals(HttpStatus.BAD_REQUEST,response.getStatusCode());
     }
 
@@ -98,7 +114,7 @@ public class TestShoppingHandler {
 
     @Test
     public void testGetCartStatusEmptyList(){
-        when(userService.getCartStatus(any())).thenReturn(null);
+        when(userService.getCartStatus(any())).thenReturn(CartFactory.cartFactory(true));
         ResponseEntity<Shop> response = controller.getCartStatus(123L);
         assertEquals(HttpStatus.OK,response.getStatusCode());
         assertEquals(0,response.getBody().getItemsList().size());
@@ -108,6 +124,6 @@ public class TestShoppingHandler {
     public void testDoneShop(){
         ResponseEntity<Shop> response = controller.doneShop(14415550L);
         assertEquals(HttpStatus.OK,response.getStatusCode());
-    }*/
+    }
 
 }
