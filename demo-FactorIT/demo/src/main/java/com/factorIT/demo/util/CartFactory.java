@@ -10,6 +10,8 @@ import java.util.List;
 
 public class CartFactory {
 
+    public static boolean isFestival = true;
+
     public static Shop cartFactory(Boolean isSpecial){
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDateTime now = LocalDateTime.now();
@@ -23,7 +25,16 @@ public class CartFactory {
         cart.setDiscount(0.0);
         cart.setTotal(0.0);
         cart.setTotalNoDiscount(0.0);
-        cart.setCartType(0);
+        cart.setCartType(isSpecial?2:0);
+        if(cart.getCartType().equals(0)) {
+            if (isFestival) {
+                cart.setCartType(1);
+                isFestival = false;
+            } else {
+                cart.setCartType(0);
+                isFestival = true;
+            }
+        }
         return cart;
     }
 

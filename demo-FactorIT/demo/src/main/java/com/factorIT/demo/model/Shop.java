@@ -1,6 +1,7 @@
 package com.factorIT.demo.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -24,6 +25,28 @@ public class Shop {
     @OneToMany(cascade = CascadeType.ALL)
     private List<Items> itemsList;
     private Double totalNoDiscount;
-    private Double discount;
+    private Double discount=0d;
     private Double total;
+
+    @Transient
+    @JsonIgnore
+    private PromotionStrategy promotion;
+
+    public void calculateTotal() {
+        if(promotion != null || !cartType.equals(0)){
+            if(promotion == null){
+                switch (cartType){
+                    case 1: promotion = new SpecialDatePromotion(); break;
+                    case 2: promotion = new VipPromotion(); break;
+                }
+            }
+            if(promotion != null) {
+                discount = promotion.calculateDiscount(this);
+            }
+            if(itemsList.size()==10){
+                discount += totalNoDiscount*0.1;
+            }
+            total = totalNoDiscount - discount;
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.factorIT.demo.service;
 
+import com.factorIT.demo.dto.response.UsuarioVista;
 import com.factorIT.demo.model.Items;
 import com.factorIT.demo.model.Shop;
 
@@ -9,7 +10,7 @@ public interface UserService {
 
     List<Items> getShopsFromUser(Long dni);
 
-    void addToCart(Long dni, Long itemId, Integer quantity);
+    Shop addToCart(Long dni, Long itemId, Integer quantity);
 
     void deleteCart(Long userId);
 
@@ -19,5 +20,7 @@ public interface UserService {
 
     Shop deleteFromCart(Long userId, Long itemId);
 
-    Double doneShop(Long userId);
+    Shop doneShop(Long userId);
+
+    UsuarioVista getUser(Long userId);
 }

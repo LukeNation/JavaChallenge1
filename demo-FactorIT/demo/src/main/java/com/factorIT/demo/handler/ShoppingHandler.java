@@ -2,8 +2,10 @@ package com.factorIT.demo.handler;
 
 import com.factorIT.demo.dto.request.AddCartRequest;
 import com.factorIT.demo.dto.request.CreateCartRequest;
+import com.factorIT.demo.dto.response.UsuarioVista;
 import com.factorIT.demo.model.Items;
 import com.factorIT.demo.model.Shop;
+import com.factorIT.demo.model.User;
 import com.factorIT.demo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,12 @@ public class ShoppingHandler {
     public ResponseEntity<List<Items>> getShops (@RequestParam Long userId){
 
         log.info("se listan las compras del usuario {}",userId);
-        return ResponseEntity.ok(service.getShopsFromUser(userId).subList(0,4));
+        List<Items> shops = service.getShopsFromUser(userId);
+        if(shops.size()>4) {
+            return ResponseEntity.ok(service.getShopsFromUser(userId).subList(0, 4));
+        }else{
+            return ResponseEntity.ok(shops);
+        }
     };
 
     @PostMapping(path = "/createCart")
@@ -72,8 +79,13 @@ public class ShoppingHandler {
     }
 
     @PostMapping(path = "/doneShop")
-    public ResponseEntity<String> doneShop(@RequestParam Long userId){
-        return ResponseEntity.ok("se finalizo la compra del usuario por un valor de: $" + service.doneShop(userId));
+    public ResponseEntity<Shop> doneShop(@RequestParam Long userId){
+        return ResponseEntity.ok(service.doneShop(userId));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioVista> getUser(@RequestParam Long userId){
+        return ResponseEntity.ok(service.getUser(userId));
     }
 
 }

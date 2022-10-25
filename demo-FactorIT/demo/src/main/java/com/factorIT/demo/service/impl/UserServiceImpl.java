@@ -1,5 +1,6 @@
 package com.factorIT.demo.service.impl;
 
+import com.factorIT.demo.dto.response.UsuarioVista;
 import com.factorIT.demo.model.ItemCatalog;
 import com.factorIT.demo.model.Items;
 import com.factorIT.demo.model.Shop;
@@ -9,7 +10,6 @@ import com.factorIT.demo.repository.ItemsRepository;
 import com.factorIT.demo.repository.ShopRepository;
 import com.factorIT.demo.repository.UserRepository;
 import com.factorIT.demo.service.UserService;
-import com.sun.istack.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void addToCart(Long dni, Long itemId, Integer quantity) {
+    public Shop addToCart(Long dni, Long itemId, Integer quantity) {
         //log.info("el id es: {} y el usuario es {}",itemId,dni);
         User user = repositoryUser.getById(dni);
         ItemCatalog itemCatalog = repositoryCatalog.getById(itemId);
@@ -77,6 +77,7 @@ public class UserServiceImpl implements UserService {
         repositoryItem.save(item);
         repositoryShop.save(cart);
         repositoryUser.save(user);
+        return cart;
     }
 
     @Override
@@ -126,46 +127,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Double doneShop(Long userId) {
+    public Shop doneShop(Long userId) {
         User user = repositoryUser.getById(userId);
         Shop cart = user.getShoppingCart();
-        Double total = 0.0;
-        if(cart != null) {
-            Double discountAmount = calculateDiscount(user);
-            cart.setDiscount(discountAmount);
-            cart.setTotal(cart.getTotalNoDiscount() - discountAmount);
-            user.getShoppingList().add(cart);
-            calculateVIP(user);
-            deleteCart(userId);
-            total = cart.getTotal();
-        }
+        cart.calculateTotal();
+        user.getShoppingList().add(cart);
+        user.setShoppingCart(null);
         repositoryUser.save(user);
-        return total;
+        return cart;
     }
 
-    @NotNull
-    private Double calculateDiscount(User user){
-        Double discountAmount = 0.0;
-        Shop cart = user.getShoppingCart();
-        Integer cantidadItems = cart.getItemsList().stream().mapToInt(Items::getQuantity).sum();
-        log.info("la cantidad de items en el carrito es {}",cantidadItems);
-        if(cantidadItems > 3){
-            log.info("se suma descuento por cantidad de items");
-            discountAmount += 100.0;
-        }
-        if(user.getVip()){
-            user.setVip(false);
-            log.info("el monto total sin descuento es {}",cart.getTotalNoDiscount());
-            if(cart.getTotalNoDiscount()>2000){
-                log.info("se suma descuento por ser VIP y comprar mas de 2000");
-                discountAmount += 500;
-            }
-        }
-        log.info("el descuento total es: {}",discountAmount);
-        return discountAmount;
-    }
-
-    private void calculateVIP(User user){
-
+    public UsuarioVista getUser(Long id){
+        User u = repositoryUser.getById(id);
+        UsuarioVista user = new UsuarioVista(u);
+        return user;
     }
 }
